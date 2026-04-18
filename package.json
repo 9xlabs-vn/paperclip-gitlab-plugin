@@ -1,6 +1,6 @@
 {
   "name": "@9xlabs/paperclip-gitlab-plugin",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "private": false,
   "description": "Link GitLab projects to Paperclip and expose GitLab REST API agent tools.",
