@@ -856,7 +856,6 @@ export function GitLabConnectorSettingsPage(_props: PluginSettingsPageProps): Re
   const hasCompany = Boolean(companyId);
   /** Prefer display name, then URL/issue prefix; last resort short id (instance settings URL has no slug). */
   const companyScopeLabel =
-    hostContext.companyName?.trim() ||
     hostContext.companyPrefix?.trim() ||
     (companyId ? `${companyId.slice(0, 8)}…` : "");
 

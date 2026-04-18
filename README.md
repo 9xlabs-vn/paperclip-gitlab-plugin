@@ -33,4 +33,23 @@ curl -X POST http://127.0.0.1:3100/api/plugins/install \
 
 - `pnpm build` uses esbuild presets from `@paperclipai/plugin-sdk/bundlers`.
 - `pnpm build:rollup` uses rollup presets from the same SDK.
-# paperclip-gitlab-plugin
+
+## npm release workflow
+
+This repo includes `.github/workflows/release-npm.yml` to publish to npm.
+
+- Trigger: GitHub Release `published` (or manual `workflow_dispatch`)
+- Required secret: `NPM_TOKEN` (npm automation token with publish access)
+- Publish command in CI: `pnpm publish --no-git-checks --access public`
+
+Before publishing, CI runs:
+
+```bash
+pnpm prepublishOnly
+```
+
+Which validates:
+
+```bash
+pnpm typecheck && pnpm test && pnpm build
+```
