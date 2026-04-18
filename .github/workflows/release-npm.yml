@@ -8,6 +8,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     permissions:
       contents: read
       id-token: write
@@ -35,7 +37,23 @@ jobs:
       - name: Validate package
         run: pnpm prepublishOnly
 
+      - name: Ensure npm token is configured
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "NPM_TOKEN secret is missing or empty."
+            exit 1
+          fi
+
+      - name: Configure npm auth
+        run: |
+          cat <<'EOF' > "$HOME/.npmrc"
+          registry=https://registry.npmjs.org/
+          //registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}
+          always-auth=true
+          EOF
+
+      - name: Verify npm auth
+        run: npm whoami
+
       - name: Publish package
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: pnpm publish --no-git-checks --access public
+        run: pnpm publish --no-git-checks --access public --registry https://registry.npmjs.org/
