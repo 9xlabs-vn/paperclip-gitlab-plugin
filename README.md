@@ -1,27 +1,50 @@
-# GitLab Connector
+# @9xlabs/paperclip-gitlab-plugin
 
-Link GitLab projects to Paperclip and expose GitLab REST API agent tools.
+GitLab connector plugin for Paperclip.
 
-## Documentation
+This plugin helps operators:
 
-Docs follow **SDLC stage folders** under **[`docs/`](./docs/README.md)** (`00-foundation` … `06-deploy`): roadmap, parity vs GitHub Sync, contracts, build/test/deploy.
+- connect a Paperclip instance to GitLab with API token validation,
+- map Paperclip projects to GitLab repositories,
+- store per-repository default branches,
+- expose GitLab merge request tools to agents.
 
-The **[`docs/sdlc/`](./docs/sdlc/README.md)** tree is the bundled **SDLC methodology reference** (playbooks, roles, templates); use alongside the stage folders above.
+## What this plugin includes
 
-Paperclip plugin authoring and specs remain in the monorepo under `doc/plugins/` (`PLUGIN_SPEC.md`, `PLUGIN_AUTHORING_GUIDE.md`).
+- Worker + UI entrypoints (`src/worker.ts`, `src/ui/index.tsx`)
+- GitLab settings page (token, mapping, branch)
+- Project/repository binding helpers
+- Agent tools:
+  - `ping_gitlab`
+  - `get_git_access_info`
+  - `list_merge_requests`
+  - `create_merge_request`
+
+## Requirements
+
+- Paperclip runtime with plugin support
+- GitLab Personal Access Token (API scope)
+- For private git clone in managed workspace: host git auth must be configured (SSH key or credential helper).  
+  Connector token is for GitLab API calls, not automatic git clone auth injection.
 
 ## Development
 
 ```bash
 pnpm install
-pnpm dev            # watch builds
-pnpm dev:ui         # local dev server with hot-reload events
+pnpm dev
+pnpm dev:ui
 pnpm test
 ```
 
+Useful commands:
 
+```bash
+pnpm typecheck
+pnpm build
+pnpm build:rollup
+```
 
-## Install Into Paperclip
+## Install into local Paperclip
 
 ```bash
 curl -X POST http://127.0.0.1:3100/api/plugins/install \
@@ -29,27 +52,45 @@ curl -X POST http://127.0.0.1:3100/api/plugins/install \
   -d '{"packageName":"/Users/norashing/Documents/Work/paperclip/plugins/paperclip-gitlab-plugin","isLocalPath":true}'
 ```
 
-## Build Options
+## Configuration flow
 
-- `pnpm build` uses esbuild presets from `@paperclipai/plugin-sdk/bundlers`.
-- `pnpm build:rollup` uses rollup presets from the same SDK.
+1. Open Paperclip -> Settings -> Plugins -> GitLab Connector
+2. Set `gitlabBaseUrl`
+3. Validate and save `gitlabTokenRef` (stored as secret ref)
+4. Add repository mappings (GitLab path -> Paperclip project)
+5. Save settings to apply bindings/workspaces/default branch data
 
-## npm release workflow
+## Documentation
 
-This repo includes `.github/workflows/release-npm.yml` to publish to npm.
+Project docs are under [`docs/`](./docs/README.md):
 
-- Trigger: GitHub Release `published` (or manual `workflow_dispatch`)
-- Required secret: `NPM_TOKEN` (npm automation token with publish access)
-- Publish target: `@9xlabs/paperclip-gitlab-plugin`
-- Publish command in CI: `pnpm publish --no-git-checks --access public`
+- planning/status: [`docs/01-planning/roadmap-and-status.md`](./docs/01-planning/roadmap-and-status.md)
+- design parity: [`docs/02-design/github-to-gitlab-parity.md`](./docs/02-design/github-to-gitlab-parity.md)
+- contracts: [`docs/03-integrate/paperclip-and-gitlab-contracts.md`](./docs/03-integrate/paperclip-and-gitlab-contracts.md)
 
-Before publishing, CI runs:
+The [`docs/sdlc/`](./docs/sdlc/README.md) folder is a bundled methodology reference.
+
+## npm release
+
+Package: `@9xlabs/paperclip-gitlab-plugin`
+
+Workflow: `.github/workflows/release-npm.yml`
+
+- Trigger: GitHub Release `published` or manual `workflow_dispatch`
+- Required repo secret: `NPM_TOKEN`
+- Publish command:
+
+```bash
+pnpm publish --no-git-checks --access public --registry https://registry.npmjs.org/
+```
+
+Prepublish validation:
 
 ```bash
 pnpm prepublishOnly
 ```
 
-Which validates:
+Which runs:
 
 ```bash
 pnpm typecheck && pnpm test && pnpm build
