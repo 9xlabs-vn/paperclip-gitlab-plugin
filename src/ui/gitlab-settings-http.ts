@@ -209,7 +209,13 @@ export async function patchPluginConfig(pluginId: string, patch: Record<string, 
     `/api/plugins/${pluginId}/config`,
   );
   const currentConfig = normalizeGitLabPluginConfig(currentResponse?.configJson ?? {});
-  const nextConfig = mergeGitLabPluginConfig(currentConfig, normalizeGitLabPluginConfig(patch));
+  const patchNormalized = normalizeGitLabPluginConfig(patch);
+  /** Partial PATCH must not wipe display identity when key is omitted. */
+  const mergedPatch =
+    Object.prototype.hasOwnProperty.call(patch, "lastGitLabApiIdentity") || !currentConfig.lastGitLabApiIdentity?.trim()
+      ? patchNormalized
+      : { ...patchNormalized, lastGitLabApiIdentity: currentConfig.lastGitLabApiIdentity };
+  const nextConfig = mergeGitLabPluginConfig(currentConfig, mergedPatch);
 
   if (JSON.stringify(nextConfig) === JSON.stringify(currentConfig)) {
     return;

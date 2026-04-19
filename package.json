@@ -1,8 +1,9 @@
 {
   "name": "@9xlabs/paperclip-gitlab-plugin",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
   "private": false,
+  "packageManager": "pnpm@9.15.4",
   "description": "Link GitLab projects to Paperclip and expose GitLab REST API agent tools.",
   "files": [
     "dist",
@@ -28,13 +29,13 @@
     "plugin",
     "connector"
   ],
-  "author": "Paperclip",
+  "author": "9xLabs",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
-    "@paperclipai/plugin-sdk": "^2026.416.0",
+    "@paperclipai/plugin-sdk": "^2026.403.0",
     "react": "^19.0.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-typescript": "^12.1.2",

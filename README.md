@@ -1,6 +1,8 @@
 # @9xlabs/paperclip-gitlab-plugin
 
-GitLab connector plugin for Paperclip.
+GitLab connector plugin for [Paperclip](https://github.com/paperclipai/paperclip).
+
+**This repository** is the 9xLabs–maintained home for the package (source, release, docs). The Paperclip **core** app and monorepo are upstream and are **not** developed here—install this plugin into any compatible Paperclip instance via npm or a local path.
 
 This plugin helps operators:
 
@@ -29,6 +31,8 @@ This plugin helps operators:
 
 ## Development
 
+Clone this repo (not the full Paperclip monorepo). Dependencies resolve from the public npm registry (`@paperclipai/plugin-sdk`, etc.).
+
 ```bash
 pnpm install
 pnpm dev
@@ -49,8 +53,12 @@ pnpm build:rollup
 ```bash
 curl -X POST http://127.0.0.1:3100/api/plugins/install \
   -H "Content-Type: application/json" \
-  -d '{"packageName":"/Users/norashing/Documents/Work/paperclip/plugins/paperclip-gitlab-plugin","isLocalPath":true}'
+  -d '{"packageName":"/absolute/path/to/paperclip-gitlab-plugin","isLocalPath":true}'
 ```
+
+Or from the CLI (with `PAPERCLIP_API_URL` pointing at your instance):
+
+`pnpm paperclipai plugin install /absolute/path/to/paperclip-gitlab-plugin`
 
 ## Configuration flow
 

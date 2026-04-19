@@ -4,6 +4,7 @@ import {
   usePluginAction,
   usePluginData,
   usePluginToast,
+  type PluginHostContext,
   type PluginSettingsPageProps,
 } from "@paperclipai/plugin-sdk/ui";
 
@@ -29,6 +30,16 @@ import {
   findGitLabBoundWorkspace,
   listProjectWorkspaces,
 } from "./gitlab-workspace-binding.js";
+
+/** Newer Paperclip hosts expose `companyName`; published SDK typings may omit it — keep plugin buildable standalone. */
+function companyScopeLabelFromHost(ctx: PluginHostContext): string {
+  const withName = ctx as PluginHostContext & { companyName?: string | null };
+  return (
+    withName.companyName?.trim()
+    || ctx.companyPrefix?.trim()
+    || (ctx.companyId ? `${ctx.companyId.slice(0, 8)}…` : "")
+  );
+}
 
 const HOST_BUTTON_BASE_CLASSNAME = [
   "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium",
@@ -434,6 +445,8 @@ function getActionErrorMessage(error: unknown, fallback: string): string {
 interface GitLabRegistration {
   gitlabBaseUrl?: string;
   gitlabTokenRef?: string;
+  /** From last successful GitLab /api/v4/user check (stored as @username). */
+  gitlabApiIdentity?: string;
   gitlabTokenConfigured: boolean;
   paperclipApiBaseUrl?: string;
   paperclipBoardAccessConfigured: boolean;
@@ -854,10 +867,8 @@ export function GitLabConnectorSettingsPage(_props: PluginSettingsPageProps): Re
 
   const companyId = hostContext.companyId ?? "";
   const hasCompany = Boolean(companyId);
-  /** Prefer display name, then URL/issue prefix; last resort short id (instance settings URL has no slug). */
-  const companyScopeLabel =
-    hostContext.companyPrefix?.trim() ||
-    (companyId ? `${companyId.slice(0, 8)}…` : "");
+  /** Prefer display name (when host provides it), then slug prefix; last resort short id. */
+  const companyScopeLabel = companyScopeLabelFromHost(hostContext);
 
   const effectiveGitLabBaseUrl = useMemo(
     () => formBaseUrl.trim() || registration.data?.gitlabBaseUrl?.trim() || "",
@@ -940,6 +951,14 @@ export function GitLabConnectorSettingsPage(_props: PluginSettingsPageProps): Re
   const gitLabSectionBadgeLabel = gitlabTokenSaved ? "Valid" : validatedPendingSave ? "Save settings" : "Required";
 
   const gitLabSummaryTokenLabel = gitlabTokenSaved ? "Valid" : validatedPendingSave ? "Pending save" : "Missing";
+
+  const gitlabIdentityDisplay = (() => {
+    if (validatedUser?.trim()) {
+      return `@${validatedUser.trim()}`;
+    }
+    const s = registration.data?.gitlabApiIdentity?.trim();
+    return s || null;
+  })();
 
   const hasMappedProjects = mappingRows.some((row) => row.gitlabPath.trim() && row.paperclipProjectId.trim());
 
@@ -1147,6 +1166,7 @@ export function GitLabConnectorSettingsPage(_props: PluginSettingsPageProps): Re
           : "Token accepted. Click Save settings to store the token and finish connecting.",
         tone: "success",
       });
+      await registration.refresh?.();
     } catch (error) {
       setValidatedUser(null);
       toast({
@@ -1211,9 +1231,15 @@ export function GitLabConnectorSettingsPage(_props: PluginSettingsPageProps): Re
 
       const trustedPaperclipApiBaseUrl = await syncTrustedPaperclipApiBaseUrl(pluginIdFromLocation);
 
+      const identityToPersist =
+        validatedUser?.trim()
+          ? `@${validatedUser.trim()}`
+          : registration.data?.gitlabApiIdentity?.trim() ?? "";
+
       await patchPluginConfig(pluginId, {
         gitlabBaseUrl: baseUrl,
         gitlabTokenRef,
+        ...(identityToPersist ? { lastGitLabApiIdentity: identityToPersist } : {}),
       });
 
       const resolvedMappings: GitLabMappingRow[] = [];
@@ -1307,6 +1333,7 @@ export function GitLabConnectorSettingsPage(_props: PluginSettingsPageProps): Re
         companyId,
         gitlabBaseUrl: baseUrl,
         gitlabTokenRef,
+        ...(identityToPersist ? { lastGitLabApiIdentity: identityToPersist } : {}),
         ...(trustedPaperclipApiBaseUrl ? { paperclipApiBaseUrl: trustedPaperclipApiBaseUrl } : {}),
         mappings: resolvedMappings,
       });
@@ -1998,6 +2025,12 @@ export function GitLabConnectorSettingsPage(_props: PluginSettingsPageProps): Re
                 <span className={`ghsync__badge ${getToneClass(tokenTone)}`}>{gitLabSummaryTokenLabel}</span>
               </div>
               <span className="ghsync__hint">
+                {gitlabIdentityDisplay ? (
+                  <>
+                    <strong>GitLab API:</strong> {gitlabIdentityDisplay}
+                    <br />
+                  </>
+                ) : null}
                 {gitlabTokenSaved
                   ? "Stored in Paperclip; worker calls GitLab REST with this credential."
                   : validatedPendingSave

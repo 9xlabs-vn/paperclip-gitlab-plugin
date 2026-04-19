@@ -2,12 +2,12 @@
 
 ## Prerequisites
 
-- Node ≥ 20, `pnpm` aligned with monorepo.
-- When developed inside the Paperclip monorepo, `plugins/*` is workspace-linked to `@paperclipai/plugin-sdk`.
+- Node ≥ 20 and `pnpm` (see `package.json` `"packageManager"`).
+- **`@paperclipai/plugin-sdk`** comes from the public npm registry (`devDependency` range in `package.json`). You do not need to clone Paperclip core to hack on this connector.
 
 ## Commands
 
-From `plugins/paperclip-gitlab-plugin/`:
+From the repository root of this package:
 
 ```bash
 pnpm install

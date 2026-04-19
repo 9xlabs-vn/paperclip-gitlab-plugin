@@ -1,6 +1,6 @@
 # `paperclip-gitlab-plugin` documentation
 
-Documentation for this package lives **here**. It does **not** ship in the Paperclip product site (`docs/` at monorepo root).
+Documentation for **this connector package** lives **here**. It is maintained in this repo alongside source (not bundled into Paperclip core docs).
 
 Structure follows **SDLC 6.x stage folders** for **this connector’s artifacts** — see the canonical template in [`sdlc/04-templates/project-folder-structure.md`](./sdlc/04-templates/project-folder-structure.md).
 
@@ -35,13 +35,14 @@ It is **not** a substitute for the numbered folders above — those hold **artif
 
 ---
 
-## References into the Paperclip monorepo
+## References (upstream Paperclip)
 
-| Topic | Location |
+General plugin contracts and authoring guidance live in the **[Paperclip](https://github.com/paperclipai/paperclip)** repo. Use these when you need cross-plugin or host semantics (this GitLab connector repo does not duplicate them).
+
+| Topic | Upstream path |
 |-------|-----------|
-| Plugin manifest & capabilities | `doc/plugins/PLUGIN_SPEC.md` |
-| Scaffold & local install | `doc/plugins/PLUGIN_AUTHORING_GUIDE.md` |
-| Mantis + GitLab split design | `doc/plans/2026-04-18-mantis-and-gitlab-connector-plugins.md` |
+| Plugin manifest & capabilities | [`doc/plugins/PLUGIN_SPEC.md`](https://github.com/paperclipai/paperclip/blob/master/doc/plugins/PLUGIN_SPEC.md) |
+| Scaffold & authoring | [`doc/plugins/PLUGIN_AUTHORING_GUIDE.md`](https://github.com/paperclipai/paperclip/blob/master/doc/plugins/PLUGIN_AUTHORING_GUIDE.md) |
 
 ---
 

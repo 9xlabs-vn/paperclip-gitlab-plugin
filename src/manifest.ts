@@ -17,7 +17,7 @@ const manifest: PaperclipPluginManifestV1 = {
   version: MANIFEST_VERSION,
   displayName: "GitLab Connector",
   description: "Link GitLab projects to Paperclip and expose GitLab REST API agent tools.",
-  author: "Paperclip",
+  author: "9xLabs",
   categories: ["connector", "ui"],
   capabilities: [
     "instance.settings.register",
@@ -42,6 +42,12 @@ const manifest: PaperclipPluginManifestV1 = {
         format: "secret-ref",
         title: "GitLab token secret",
         description: "Paperclip secret reference for a GitLab personal access token or project/bot token (api scope).",
+      },
+      lastGitLabApiIdentity: {
+        type: "string",
+        title: "Last validated GitLab user",
+        description:
+          "Display label from the last successful GitLab token check (GitLab API /api/v4/user); kept for the settings Summary after reload.",
       },
       paperclipBoardApiTokenRefs: {
         type: "object",

@@ -146,6 +146,7 @@ async function buildRegistrationPayload(ctx: PluginContext, input: Record<string
   return {
     gitlabBaseUrl: resolved.gitlabBaseUrl,
     gitlabTokenRef: resolved.gitlabTokenRef,
+    gitlabApiIdentity: resolved.lastGitLabApiIdentity ?? "",
     gitlabTokenConfigured: Boolean(resolved.gitlabTokenRef?.trim() && resolved.gitlabBaseUrl?.trim()),
     paperclipApiBaseUrl: resolved.paperclipApiBaseUrl,
     paperclipBoardAccessConfigured: hasBoardAccess(resolved, requestedCompanyId),
@@ -261,6 +262,7 @@ export function registerGitLabSettingsHandlers(ctx: PluginContext): void {
     const patch: Record<string, unknown> = {};
     if ("gitlabBaseUrl" in record) patch.gitlabBaseUrl = record.gitlabBaseUrl;
     if ("gitlabTokenRef" in record) patch.gitlabTokenRef = record.gitlabTokenRef;
+    if ("lastGitLabApiIdentity" in record) patch.lastGitLabApiIdentity = record.lastGitLabApiIdentity;
     if ("paperclipApiBaseUrl" in record) patch.paperclipApiBaseUrl = record.paperclipApiBaseUrl;
     if ("paperclipBoardApiTokenRefs" in record) patch.paperclipBoardApiTokenRefs = record.paperclipBoardApiTokenRefs;
 
@@ -379,6 +381,21 @@ export function registerGitLabSettingsHandlers(ctx: PluginContext): void {
       throw new Error("Enter a GitLab personal access token.");
     }
 
-    return validateGitLabToken(ctx, baseUrl, token);
+    const result = await validateGitLabToken(ctx, baseUrl, token);
+    const rawUser = typeof result.username === "string" ? result.username.trim() : "";
+    const identityLabel =
+      rawUser && rawUser !== "unknown"
+        ? `@${rawUser}`
+        : "";
+
+    const prevState = normalizeGitLabPluginConfig(await ctx.state.get(GITLAB_SETTINGS_SCOPE));
+    await ctx.state.set(GITLAB_SETTINGS_SCOPE, {
+      ...(identityLabel
+        ? mergeGitLabPluginConfig(prevState, { lastGitLabApiIdentity: identityLabel })
+        : prevState),
+      updatedAt: new Date().toISOString(),
+    });
+
+    return result;
   });
 }

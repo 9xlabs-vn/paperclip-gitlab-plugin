@@ -1,37 +1,46 @@
 # Operator install (Stage 06 — Deploy)
 
-## Local / dev path
+## Build
 
-Build the plugin, then install into the Paperclip host from the **absolute** package path:
+From a clone of **this** repository (this package, not the Paperclip app monorepo):
 
 ```bash
-pnpm --filter paperclip-gitlab-plugin build
-pnpm paperclipai plugin install /absolute/path/to/paperclip/plugins/paperclip-gitlab-plugin
+cd paperclip-gitlab-plugin
+pnpm install
+pnpm build
 ```
+
+`prepack` / `prepublishOnly` also run `build` and checks; see `package.json` scripts.
+
+## Local / dev path
+
+Install into the Paperclip host from the **absolute** path to this package on the machine where the **server** runs:
+
+```bash
+pnpm paperclipai plugin install /absolute/path/to/paperclip-gitlab-plugin
+```
+
+(With `PAPERCLIP_API_URL` and admin auth set; see Paperclip CLI docs.)
 
 Or HTTP API (example):
 
 ```bash
 curl -X POST http://127.0.0.1:3100/api/plugins/install \
   -H "Content-Type: application/json" \
-  -d '{"packageName":"/absolute/path/to/paperclip/plugins/paperclip-gitlab-plugin","isLocalPath":true}'
+  -d '{"packageName":"/absolute/path/to/paperclip-gitlab-plugin","isLocalPath":true}'
 ```
-
-The host may watch local-path plugins and reload workers after rebuilds — see monorepo `doc/plugins/PLUGIN_AUTHORING_GUIDE.md`.
 
 ## Configuration
 
-After install, open **instance plugin settings** for `paperclip-gitlab-plugin`:
+After install, open **Instance → Settings → Plugins** and the **GitLab Connector** settings page:
 
 - **GitLab base URL** — include scheme; use your self-managed hostname when applicable.
-- **GitLab token secret reference** — Paperclip secret ref pointing to a PAT or bot token with API access appropriate for your workflows.
+- **GitLab token** — stored as a company secret; the instance config holds a secret ref the worker resolves.
 
 ## Production
 
-Prefer publishing an **npm package** (or private registry tarball) and installing by package name/version rather than cloning this repo on the server.
-
-Host deployment topics (Docker, secrets, storage): monorepo `docs/deploy/` (Paperclip product docs).
+Prefer installing the **npm package** `@9xlabs/paperclip-gitlab-plugin@<version>` (or a private registry mirror) on the host so the server does not need a git clone of this repo on disk.
 
 ## Operate
 
-For day-2 operations (rotate token, troubleshoot 401/403), keep runbook notes beside this doc or link your org’s internal ops wiki.
+For day-2 operations (rotate token, troubleshoot 401/403), use your org’s runbook or the docs under `docs/` in this repository.

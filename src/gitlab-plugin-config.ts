@@ -8,6 +8,8 @@ export type PluginConfigBoardTokenRefs = Record<string, string>;
 export interface GitLabConnectorPluginConfig extends Record<string, unknown> {
   gitlabBaseUrl?: string;
   gitlabTokenRef?: string;
+  /** Set when token validation succeeds; shown in settings summary and survives reload when merged into instance config. */
+  lastGitLabApiIdentity?: string;
   paperclipBoardApiTokenRefs?: PluginConfigBoardTokenRefs;
   paperclipApiBaseUrl?: string;
 }
@@ -59,6 +61,10 @@ export function normalizeGitLabPluginConfig(value: unknown): GitLabConnectorPlug
   const record = { ...(value as Record<string, unknown>) };
   const gitlabBaseUrl = normalizeOptionalString(record.gitlabBaseUrl);
   const gitlabTokenRef = normalizeOptionalString(record.gitlabTokenRef);
+  const lastGitLabApiIdentity =
+    typeof record.lastGitLabApiIdentity === "string" && record.lastGitLabApiIdentity.trim()
+      ? record.lastGitLabApiIdentity.trim()
+      : undefined;
   const paperclipBoardApiTokenRefs = normalizePluginConfigBoardTokenRefs(record.paperclipBoardApiTokenRefs);
   const paperclipApiBaseUrl = normalizePaperclipApiBaseUrl(record.paperclipApiBaseUrl);
 
@@ -66,6 +72,7 @@ export function normalizeGitLabPluginConfig(value: unknown): GitLabConnectorPlug
 
   if (gitlabBaseUrl) next.gitlabBaseUrl = gitlabBaseUrl;
   if (gitlabTokenRef) next.gitlabTokenRef = gitlabTokenRef;
+  if (lastGitLabApiIdentity) next.lastGitLabApiIdentity = lastGitLabApiIdentity;
   if (paperclipBoardApiTokenRefs) next.paperclipBoardApiTokenRefs = paperclipBoardApiTokenRefs;
   if (paperclipApiBaseUrl) next.paperclipApiBaseUrl = paperclipApiBaseUrl;
 
@@ -76,12 +83,28 @@ export function mergeGitLabPluginConfig(
   currentValue: unknown,
   patch: Partial<GitLabConnectorPluginConfig>,
 ): GitLabConnectorPluginConfig {
-  const current = normalizeGitLabPluginConfig(currentValue);
+  const a = normalizeGitLabPluginConfig(currentValue);
+  const b = patch;
+  const current = a;
   const currentBoardTokenRefs = normalizePluginConfigBoardTokenRefs(current.paperclipBoardApiTokenRefs);
   const patchBoardTokenRefs = normalizePluginConfigBoardTokenRefs(patch.paperclipBoardApiTokenRefs);
-  const next = normalizeGitLabPluginConfig({
+  const merged = normalizeGitLabPluginConfig({
     ...current,
     ...patch,
+  });
+
+  const identity =
+    typeof b.lastGitLabApiIdentity === "string"
+      ? b.lastGitLabApiIdentity.trim() || undefined
+      : merged.lastGitLabApiIdentity?.trim()
+        ? merged.lastGitLabApiIdentity.trim()
+        : a.lastGitLabApiIdentity?.trim()
+          ? a.lastGitLabApiIdentity.trim()
+          : undefined;
+
+  const next = normalizeGitLabPluginConfig({
+    ...merged,
+    lastGitLabApiIdentity: identity,
   });
 
   if ("paperclipBoardApiTokenRefs" in patch) {

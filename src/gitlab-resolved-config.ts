@@ -23,5 +23,6 @@ export async function loadResolvedGitLabPluginConfig(ctx: PluginContext): Promis
       ...(db.paperclipBoardApiTokenRefs ?? {}),
       ...(st.paperclipBoardApiTokenRefs ?? {}),
     },
+    lastGitLabApiIdentity: st.lastGitLabApiIdentity?.trim() || db.lastGitLabApiIdentity?.trim() || undefined,
   });
 }
