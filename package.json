@@ -1,15 +1,20 @@
 {
   "name": "@9xlabs/paperclip-gitlab-plugin",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "private": false,
   "description": "Link GitLab projects to Paperclip and expose GitLab REST API agent tools.",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "node ./esbuild.config.mjs",
     "build:rollup": "rollup -c",
     "dev": "node ./esbuild.config.mjs --watch",
     "dev:ui": "paperclip-plugin-dev-server --root . --ui-dir dist/ui --port 4177",
-    "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build",
+    "prepublishOnly": "pnpm typecheck && pnpm test",
+    "prepack": "pnpm build",
     "test": "vitest run --config ./vitest.config.ts",
     "typecheck": "tsc --noEmit"
   },
